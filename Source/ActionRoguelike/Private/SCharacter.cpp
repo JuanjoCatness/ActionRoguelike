@@ -7,6 +7,9 @@
 #include "Camera/CameraComponent.h"
 #include "SInteractionComponent.h"
 #include "Animation/AnimMontage.h"
+#include "SAttributeCompontent.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -22,6 +25,8 @@ ASCharacter::ASCharacter()
 	CameraComp->SetupAttachment(SpringArmComp);
 
 	InteractionComp = CreateDefaultSubobject<USInteractionComponent>("InteractionComp");
+
+	AttributeComp = CreateDefaultSubobject <USAttributeCompontent>(TEXT("AttributeComponent"));
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
@@ -59,30 +64,88 @@ void ASCharacter::MoveRight(float Value){
 }
 
 void ASCharacter::PrimaryAttack(){
-
 	PlayAnimMontage(AttackAnim);
-
 	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::PrimaryAttack_TimeElapsed, 0.2f);
-
-
 }
 
 void ASCharacter::PrimaryAttack_TimeElapsed(){
-	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+	SpawnProjectile(ProjectileBasic);
+}
 
-	FTransform SpawnTM = FTransform(GetControlRotation(), HandLocation);
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	//Set the owner of the projectile as this character
-	SpawnParams.Instigator = this;
+void ASCharacter::BlackHoleAttack(){
+	PlayAnimMontage(AttackAnim);
+	GetWorldTimerManager().SetTimer(TimerHandle_BlackHoleAttack, this, &ASCharacter::BlackHoleAttack_TimeElapsed, 0.2f);
+}
 
-	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+void ASCharacter::BlackHoleAttack_TimeElapsed(){
+	SpawnProjectile(ProjectileBlackHole);
+}
+
+void ASCharacter::Dash(){
+	PlayAnimMontage(AttackAnim);
+	GetWorldTimerManager().SetTimer(TimerHandle_DashAttack, this, &ASCharacter::Dash_TimeElapsed, 0.2f);
+}
+
+void ASCharacter::Dash_TimeElapsed(){
+	SpawnProjectile(ProjectileDash);
 }
 
 void ASCharacter::PrimaryInteract(){
 	if (InteractionComp) {
 		InteractionComp->PrimaryInteract();
 	}
+}
+
+void ASCharacter::SpawnProjectile(TSubclassOf<AActor> ClassToSpawn){
+	if (ensure(ClassToSpawn)) {
+		//SpawnCastProejctile
+		UGameplayStatics::SpawnEmitterAttached(CastParticles, GetMesh(), FName("Muzzle_01"));
+
+		FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		//Set the owner of the projectile as this character
+		SpawnParams.Instigator = this;
+
+		FCollisionShape Shape;
+		Shape.SetSphere(20.0f);
+
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+
+		FCollisionObjectQueryParams ObjParam;
+		ObjParam.AddObjectTypesToQuery(ECC_WorldDynamic);
+		ObjParam.AddObjectTypesToQuery(ECC_WorldStatic);
+		ObjParam.AddObjectTypesToQuery(ECC_Pawn);
+
+		FVector TraceStart = CameraComp->GetComponentLocation();
+
+		FVector TraceEnd = CameraComp->GetComponentLocation() + (GetControlRotation().Vector() * 50000);
+
+		FHitResult Hit;
+		if (GetWorld()->SweepSingleByObjectType(Hit, TraceStart, TraceEnd, FQuat::Identity, ObjParam, Shape, Params)) {
+			TraceEnd = Hit.ImpactPoint;
+		}
+
+		FTransform SpawnTM = FTransform(FRotationMatrix::MakeFromX(TraceEnd - HandLocation).Rotator(), HandLocation);
+		GetWorld()->SpawnActor<AActor>(ClassToSpawn, SpawnTM, SpawnParams);
+	}
+}
+
+void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeCompontent* OwningComp, float NewHealth, float Delta){
+	if (Delta < 0.0f) {
+		GetMesh()->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds);
+	}
+
+	if (NewHealth <= 0.0f && Delta < 0.0) {
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		DisableInput(PC);
+	}
+}
+
+void ASCharacter::PostInitializeComponents(){
+	Super::PostInitializeComponents();
+	AttributeComp->OnHealthChange.AddDynamic(this, &ASCharacter::OnHealthChanged);
 }
 
 // Called every frame
@@ -105,6 +168,9 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
+	PlayerInputComponent->BindAction("BlackHoleAttack", IE_Pressed, this, &ASCharacter::BlackHoleAttack);
+	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &ASCharacter::Dash);
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::PrimaryInteract);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::Jump);
 }
 

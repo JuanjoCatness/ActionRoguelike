@@ -3,6 +3,7 @@
 
 #include "SExplosiveBarrel.h"
 #include "PhysicsEngine/RadialForceComponent.h"
+#include "SAttributeCompontent.h"
 
 // Sets default values
 ASExplosiveBarrel::ASExplosiveBarrel()
@@ -13,7 +14,6 @@ ASExplosiveBarrel::ASExplosiveBarrel()
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshComp");
 	MeshComp->SetSimulatePhysics(true);
 	MeshComp->SetCollisionProfileName("PhysicsActor");
-	MeshComp->OnComponentHit.AddDynamic(this, &ASExplosiveBarrel::OnCompHit);
 	RootComponent = MeshComp;
 
 	RadialForceComp = CreateDefaultSubobject<URadialForceComponent>("RadialForceComp");
@@ -21,6 +21,7 @@ ASExplosiveBarrel::ASExplosiveBarrel()
 	RadialForceComp->ImpulseStrength = 2000.0f;
 	RadialForceComp->bImpulseVelChange = true;
 	RadialForceComp->bAutoActivate = false;
+	//RadialForceComp->AddCollisionChannelToAffect(ECC_WorldDynamic);
 	RadialForceComp->SetupAttachment(RootComponent);
 }
 
@@ -29,6 +30,12 @@ void ASExplosiveBarrel::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void ASExplosiveBarrel::PostInitializeComponents(){
+	Super::PostInitializeComponents();
+
+	MeshComp->OnComponentHit.AddDynamic(this, &ASExplosiveBarrel::OnCompHit);
 }
 
 // Called every frame
@@ -41,5 +48,11 @@ void ASExplosiveBarrel::Tick(float DeltaTime)
 void ASExplosiveBarrel::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	RadialForceComp->FireImpulse();
+	if (OtherActor) {
+		USAttributeCompontent* AttributeComp = Cast<USAttributeCompontent>(OtherActor->GetComponentByClass(USAttributeCompontent::StaticClass()));
+		if (AttributeComp) {
+			AttributeComp->ApplyHealthChange(-50);
+		}
+	}
 }
 
