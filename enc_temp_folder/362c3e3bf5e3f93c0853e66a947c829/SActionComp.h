@@ -34,8 +34,6 @@ public:
 	USActionComp();
 
 protected:
-	UFUNCTION(Server, Reliable)
-		void ServerStartAction(AActor* Instigator, FName ActionName);
 
 	UPROPERTY(EditAnywhere, Category="Actions")
 		TArray<TSubclassOf<USAction>> DefaultsActions;

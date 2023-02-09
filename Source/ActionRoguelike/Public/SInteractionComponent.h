@@ -7,6 +7,8 @@
 #include "SInteractionComponent.generated.h"
 
 
+class USWorldyUserWidget;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ACTIONROGUELIKE_API USInteractionComponent : public UActorComponent
 {
@@ -20,8 +22,32 @@ public:
 	USInteractionComponent();
 
 protected:
+
+	UFUNCTION(Server, Reliable)
+	void ServerInteract(AActor* InFocus);
+
+	void FindBestInteractable();
+
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+	UPROPERTY()
+	AActor* FocusedActor;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+		TSubclassOf<USWorldyUserWidget> DefaultWidgetClass;
+
+	UPROPERTY()
+		USWorldyUserWidget* DefaultWidgetInstance;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+		float TraceDistance;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+		float TraceRadius;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+		TEnumAsByte<ECollisionChannel> CollisionChannel;
 
 public:	
 	// Called every frame

@@ -12,11 +12,7 @@ USActionComp::USActionComp()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	SetIsReplicatedByDefault(true);
-}
-
-void USActionComp::ServerStartAction_Implementation(AActor* Instigator, FName ActionName){
-	StartActionByName(Instigator, ActionName);
+	// ...
 }
 
 
@@ -65,11 +61,6 @@ bool USActionComp::StartActionByName_Implementation(AActor* NewInstigator, FName
 		if (Action && Action->ActionName == ActionName) {
 			if (!Action->CanStart(NewInstigator)) {
 				continue;
-			}
-
-			//Is client?
-			if (!GetOwner()->HasAuthority()) {
-				ServerStartAction(NewInstigator, ActionName);
 			}
 
 			Action->StartAction(NewInstigator);

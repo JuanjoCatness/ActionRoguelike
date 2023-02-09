@@ -16,6 +16,8 @@ ASPickUp::ASPickUp()
 
 	//bCanInteract = true;
 	TimeToReactivate = 10.0f;
+
+	SetReplicates(true);
 }
 
 void ASPickUp::Interact_Implementation(APawn* InstigatorPawn)
