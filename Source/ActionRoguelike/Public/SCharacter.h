@@ -12,37 +12,19 @@ class USInteractionComponent;
 class USAttributeCompontent;
 class UAnimMontage;
 class UParticleSystem;
+class USActionComp;
 
 UCLASS()
 class ACTIONROGUELIKE_API ASCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-protected:
-	UPROPERTY(EditAnywhere, Category="Attack")
-	TSubclassOf<AActor> ProjectileBasic;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-		TSubclassOf<AActor> ProjectileBlackHole;
-
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-		TSubclassOf<AActor> ProjectileDash;
-
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-		UAnimMontage* AttackAnim;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-		UParticleSystem* CastParticles;
-
-	FTimerHandle TimerHandle_PrimaryAttack;
-	FTimerHandle TimerHandle_BlackHoleAttack;
-	FTimerHandle TimerHandle_DashAttack;
-
 public:
 	// Sets default values for this character's properties
 	ASCharacter();
+
+	UFUNCTION(Exec)
+		void HealSelf(float Quantity = 100.0f);
 
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -56,7 +38,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category = "Components")
 		USAttributeCompontent* AttributeComp;
-	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+		USActionComp* ActionComp;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -64,23 +48,26 @@ protected:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 
+	void SprintStart();
+	void SprintStop();
+
 	void PrimaryAttack();
-	void PrimaryAttack_TimeElapsed();
 
 	void BlackHoleAttack();
-	void BlackHoleAttack_TimeElapsed();
+
 
 	void Dash();
-	void Dash_TimeElapsed();
+
 
 	void PrimaryInteract();
 
-	void SpawnProjectile(TSubclassOf<AActor> ClassToSpawn);
 
 	UFUNCTION()
 		void OnHealthChanged(AActor* InstigatorActor, USAttributeCompontent* OwningComp, float NewHealth, float Delta);
 
 	virtual void PostInitializeComponents() override;
+
+	virtual FVector GetPawnViewLocation() const override;
 
 public:	
 	// Called every frame

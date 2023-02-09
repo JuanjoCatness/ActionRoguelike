@@ -14,7 +14,7 @@ ASPickUp::ASPickUp()
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
 	RootComponent = BaseMesh;
 
-	bCanInteract = true;
+	//bCanInteract = true;
 	TimeToReactivate = 10.0f;
 }
 
@@ -25,11 +25,11 @@ void ASPickUp::Interact_Implementation(APawn* InstigatorPawn)
 
 
 void ASPickUp::Interact(APawn* InstigatorPawn){
-	if (bCanInteract) {
+	//if (bCanInteract) {
 		Disable();
 		//Other logic
 		GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASPickUp::Enable, TimeToReactivate, false);
-	}
+	//}
 }
 
 // Called when the game starts or when spawned
@@ -47,13 +47,13 @@ void ASPickUp::Tick(float DeltaTime)
 }
 
 void ASPickUp::Enable(){
-	bCanInteract = true;
+	//bCanInteract = true;
 	BaseMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	BaseMesh->SetVisibility(true);
 }
 
 void ASPickUp::Disable(){
-	bCanInteract = false;
+	//bCanInteract = false;
 	BaseMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	BaseMesh->SetVisibility(false);
 }

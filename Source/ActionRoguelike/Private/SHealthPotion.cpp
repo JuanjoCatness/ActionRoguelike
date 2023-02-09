@@ -12,9 +12,9 @@ ASHealthPotion::ASHealthPotion()
 void ASHealthPotion::Interact(APawn* InstigatorPawn){
 	USAttributeCompontent* AttributeComponent = Cast<USAttributeCompontent>(InstigatorPawn->GetComponentByClass(USAttributeCompontent::StaticClass()));
 
-	if (AttributeComponent->GetHealth() < AttributeComponent->GetMaxHealth() && bCanInteract) {
+	if (AttributeComponent->GetHealth() < AttributeComponent->GetMaxHealth()) {
 		Super::Interact(InstigatorPawn);
-		AttributeComponent->ApplyHealthChange(HealQuantity);
+		AttributeComponent->ApplyHealthChange(this, HealQuantity);
 	}
 }
 

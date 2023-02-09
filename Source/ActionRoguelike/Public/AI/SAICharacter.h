@@ -7,6 +7,9 @@
 #include "SAICharacter.generated.h"
 
 class UPawnSensingComponent;
+class USAttributeCompontent;
+class UUSerWidget;
+class USWorldyUserWidget;
 
 UCLASS()
 class ACTIONROGUELIKE_API ASAICharacter : public ACharacter
@@ -18,12 +21,35 @@ public:
 	ASAICharacter();
 
 protected:
+	USWorldyUserWidget* ActiveHealthBar;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+		TSubclassOf<UUserWidget> HealthBarWidgetClass;
+
+	UPROPERTY(VisibleAnywhere, Category = "AI")
+		FName BlackboardKey_HealthName;
+
+	UPROPERTY(VisibleAnywhere, Category = "Effects")
+		FName TimeToHitParam;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 		UPawnSensingComponent* PawnSensingComp;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+		USAttributeCompontent* AttributeComp;
+
 	virtual void PostInitializeComponents() override;
 
 	UFUNCTION()
+		void OnHealthChanged(AActor* InstigatorActor, USAttributeCompontent* OwningComp, float NewHealth, float Delta);
+
+	UFUNCTION()
 	void OnPawnSeen(APawn* Pawn);
+
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	void UpdateHealthBlackBoardKey();
+
+	void SetTargetActor(AActor* Pawn);
 };

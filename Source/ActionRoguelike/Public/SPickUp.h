@@ -34,7 +34,7 @@ protected:
 	void Enable();
 	void Disable();
 
-	bool bCanInteract;
+	//bool bCanInteract;
 
 	FTimerHandle TimerHandle_PrimaryAttack;
 

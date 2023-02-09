@@ -6,6 +6,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "SAttributeCompontent.h"
+#include "SGameplayFunctionLibrary.h"
 
 // Sets default values
 ASMagicProjectile::ASMagicProjectile()
@@ -18,10 +19,8 @@ ASMagicProjectile::ASMagicProjectile()
 void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != GetInstigator()) {
-		USAttributeCompontent* AttributeComp = Cast<USAttributeCompontent>(OtherActor->GetComponentByClass(USAttributeCompontent::StaticClass()));
-		if (AttributeComp) {
-			AttributeComp->ApplyHealthChange(-20.0f);
-			Destroy();
+		if (USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, -20.0f, SweepResult)) {
+			Explode();
 		}
 	}
 }

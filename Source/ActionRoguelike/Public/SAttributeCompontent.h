@@ -21,13 +21,21 @@ public:
 	// Sets default values for this component's properties
 	USAttributeCompontent();
 
+	UFUNCTION(BlueprintCallable, Category ="Attributes")
+	static USAttributeCompontent* GetAttribute(AActor* Actor);
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes", meta=(DisplayName = "IsAlive"))
+		static bool IsActorAlive(AActor* Actor);
 
 public:	
+	UFUNCTION()
+		bool Kill(AActor* InsitigatorActor);
+
 	UPROPERTY(BlueprintAssignable)
 	FOnHealthChanged OnHealthChange;
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
-	bool ApplyHealthChange(float Delta);
+	bool ApplyHealthChange(AActor* InstigatorActor, float Delta);
 
 	float GetHealth();
 	float GetMaxHealth();
