@@ -10,6 +10,7 @@ class UPawnSensingComponent;
 class USAttributeCompontent;
 class UUSerWidget;
 class USWorldyUserWidget;
+class USActionComp;
 
 UCLASS()
 class ACTIONROGUELIKE_API ASAICharacter : public ACharacter
@@ -37,6 +38,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 		USAttributeCompontent* AttributeComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+		USActionComp* ActionComp;
 
 	virtual void PostInitializeComponents() override;
 

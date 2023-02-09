@@ -11,12 +11,14 @@
 #include "SWorldyUserWidget.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "SActionComp.h"
 
 // Sets default values
 ASAICharacter::ASAICharacter()
 {
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>("PawnSensingComp");
 	AttributeComp = CreateDefaultSubobject <USAttributeCompontent>(TEXT("AttributeComponent"));
+	ActionComp = CreateDefaultSubobject <USActionComp>(TEXT("ActionComp"));
 	
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 

@@ -48,6 +48,10 @@ void USActionComp::AddAction(TSubclassOf<USAction> ActionClass){
 bool USActionComp::StartActionByName_Implementation(AActor* NewInstigator, FName ActionName){
 	for (USAction* Action : Actions) {
 		if (Action && Action->ActionName == ActionName) {
+			if (!Action->CanStart(NewInstigator)) {
+				continue;
+			}
+
 			Action->StartAction(NewInstigator);
 			return true;
 		}
@@ -60,8 +64,10 @@ bool USActionComp::StopActionByName_Implementation(AActor* NewInstigator, FName 
 {
 	for (USAction* Action : Actions) {
 		if (Action && Action->ActionName == ActionName) {
-			Action->StopAction(NewInstigator);
-			return true;
+			if (Action->IsRunning()) {
+				Action->StopAction(NewInstigator);
+				return true;
+			}
 		}
 	}
 
