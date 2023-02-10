@@ -19,6 +19,7 @@ public:
 		float TargetPitch;
 
 		void Interact_Implementation(APawn* InstigatorPawn);
+		void OnActorLoaded_Implementation();
 
 public:	
 	// Sets default values for this actor's properties
@@ -26,7 +27,7 @@ public:
 
 protected:
 
-	UPROPERTY(ReplicatedUsing="OnRep_LidOpened")
+	UPROPERTY(ReplicatedUsing="OnRep_LidOpened", BlueprintReadOnly, SaveGame)
 		bool bLidIsOpen;
 
 	UFUNCTION()

@@ -3,32 +3,49 @@
 
 #include "SAction.h"
 #include "SActionComp.h"
+#include "Net/UnrealNetwork.h"
 
 void USAction::StartAction_Implementation(AActor* NewInstigator){
 	USActionComp* Comp = GetOwningComponent();
 	Comp->ActiveGameplayTags.AppendTags(GrantsTags);
 
-	bIsRunning = true;
+	RepData.bIsRunning = true;
+	RepData.Instigator = NewInstigator;
 }
 
 void USAction::StopAction_Implementation(AActor* NewInstigator){
 
-	ensureAlways(bIsRunning);
+	//ensureAlways(bIsRunning);
 
 	USActionComp* Comp = GetOwningComponent();
 	Comp->ActiveGameplayTags.RemoveTags(GrantsTags);
 
-	bIsRunning = false;
+	RepData.bIsRunning = false;
 }
 
 USActionComp* USAction::GetOwningComponent() const
 {
-	return Cast<USActionComp>(GetOuter());
+	return ActionComp;
 }
+
+void USAction::OnRep_RepData(){
+	if (RepData.bIsRunning) {
+		StartAction(RepData.Instigator);
+	}
+	else {
+		StopAction(RepData.Instigator);
+	}
+}
+
+void USAction::Initialize(USActionComp* NewActionComp){
+	ActionComp = NewActionComp;
+}
+
+
 
 bool USAction::IsRunning() const
 {
-	return bIsRunning;
+	return RepData.bIsRunning;
 }
 
 bool USAction::CanStart_Implementation(AActor* NewInstigator){
@@ -45,11 +62,26 @@ bool USAction::CanStart_Implementation(AActor* NewInstigator){
 
 UWorld* USAction::GetWorld() const
 {
+	//Changed compt to actor because unreal when replicates the action change the world because change from component to actor
+
 	//Outer set via blueprint
-	UActorComponent* Comp = Cast<UActorComponent>(GetOuter());
-	if (Comp) {
-		return Comp->GetWorld();
+	AActor* Actor = Cast<AActor>(GetOuter());
+	if (Actor) {
+		return Actor->GetWorld();
 	}
 
 	return nullptr;
+}
+
+bool USAction::IsSupportedForNetworking() const
+{
+	return true;
+}
+
+void USAction::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)const {
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	//Says to all clients to set the lidIsOpen
+	DOREPLIFETIME(USAction, RepData);
+	DOREPLIFETIME(USAction, ActionComp);
 }

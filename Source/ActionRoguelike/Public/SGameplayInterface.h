@@ -25,4 +25,8 @@ public:
 
 	UFUNCTION(Blueprintcallable, BlueprintNativeEvent)
 	void Interact(APawn* InstigatorPawn);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnActorLoaded();
+
 };

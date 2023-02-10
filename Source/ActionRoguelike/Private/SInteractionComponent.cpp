@@ -6,7 +6,7 @@
 #include "SWorldyUserWidget.h"
 
 void USInteractionComponent::PrimaryInteract() {
-	ServerInteract(FocusedActor);
+	ServerInteract(FocusedActor); //Server PCB
 
 }
 

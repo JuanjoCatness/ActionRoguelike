@@ -9,11 +9,17 @@
 #include "SAttributeCompontent.h"
 #include "EngineUtils.h"
 #include "SCharacter.h"
+#include "SSavesGame.h"
+#include "Kismet/GameplayStatics.h"
+#include "SGameplayInterface.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
 static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.Spawnbots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
 
 ASGameModeBase::ASGameModeBase(){
 	SpawnTimerInterval = 2.0f;
+
+	SlotName = "Slot_01";
 }
 
 void ASGameModeBase::StartPlay(){
@@ -42,6 +48,77 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer){
 		Delegate.BindUFunction(this, "RespawnPlayerElapsed", Player->GetController());
 
 		GetWorldTimerManager().SetTimer(TimerHandle_RespawnDelay, Delegate, 2.0f, false);
+	}
+}
+
+void ASGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage){
+	Super::InitGame(MapName, Options, ErrorMessage);
+	LoadSaveGame();
+}
+
+void ASGameModeBase::WriteSaveGame(){
+
+	CurrentSaveGame->SavedActor.Empty();
+
+	for (FActorIterator It(GetWorld()); It; ++It) {
+		AActor* Actor = *It;
+
+		if (!Actor->Implements<USGameplayInterface>()) {
+			continue;
+		}
+
+		FActorSaveData ActorData;
+		ActorData.ActorName = Actor->GetName();
+		ActorData.Transform = Actor->GetTransform();
+
+		//Serialize the object and saves it
+			FMemoryWriter MemWriter(ActorData.ByteData);
+			FObjectAndNameAsStringProxyArchive Ar(MemWriter, true);
+			//Find only variables with UPROPERTY(SaveGame)
+			Ar.ArIsSaveGame = true;
+			Actor->Serialize(Ar);
+		//---
+
+		CurrentSaveGame->SavedActor.Add(ActorData);
+	}
+
+	UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SlotName, 0);
+}
+
+void ASGameModeBase::LoadSaveGame() {
+	if (UGameplayStatics::DoesSaveGameExist(SlotName, 0)) {
+		CurrentSaveGame = Cast<USSavesGame>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
+		if (CurrentSaveGame == nullptr) {
+			return;
+		}
+
+		for (FActorIterator It(GetWorld()); It; ++It) {
+			AActor* Actor = *It;
+
+			if (!Actor->Implements<USGameplayInterface>()) {
+				continue;
+			}
+
+			for (FActorSaveData ActorData : CurrentSaveGame->SavedActor) {
+				if (ActorData.ActorName == Actor->GetName()) {
+					Actor->SetActorTransform(ActorData.Transform);
+
+					//Serialize the object and loads it
+					FMemoryReader MemReader(ActorData.ByteData);
+					FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
+					Ar.ArIsSaveGame = true;
+					//Convert binary array back into actors variables
+					Actor->Serialize(Ar);
+					//---
+
+					ISGameplayInterface::Execute_OnActorLoaded(Actor);
+				}
+			}
+		}
+
+	}
+	else {
+		CurrentSaveGame = Cast<USSavesGame>(UGameplayStatics::CreateSaveGameObject(USSavesGame::StaticClass()));
 	}
 }
 
