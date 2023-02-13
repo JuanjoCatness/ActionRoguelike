@@ -12,10 +12,7 @@ void USAction::StartAction_Implementation(AActor* NewInstigator){
 	RepData.bIsRunning = true;
 	RepData.Instigator = NewInstigator;
 
-	//If its the server
-	if (GetOwningComponent()->GetOwnerRole() == ROLE_Authority) {
-		TimerStarted = GetWorld()->TimeSeconds;
-	}
+	TimerStarted = GetWorld()->TimeSeconds;
 
 	GetOwningComponent()->OnActionStarted.Broadcast(GetOwningComponent(), this);
 }
@@ -95,6 +92,5 @@ void USAction::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 
 	//Says to all clients to set the lidIsOpen
 	DOREPLIFETIME(USAction, RepData);
-	DOREPLIFETIME(USAction, TimerStarted);
 	DOREPLIFETIME(USAction, ActionComp);
 }

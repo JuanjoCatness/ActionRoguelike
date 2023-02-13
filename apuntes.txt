@@ -1,0 +1,259 @@
+-Hay un sistema de daño ya hecho en unreal, mirar applyDamage y OnTakeAnyDamage
+-Ya hay un component que simula fisicas de proyectiles
+-Se puede establecer el dueño de un objeto especifico (por ejemplo un projectil) con SetOwner, por lo tanto cuando se llame GetOwner obtendrá el nuevo dueño
+-Multicast delegate
+-CameraShake en rotacion y FOV son los mas propicios a causar motionSickness
+-Se puede bindear funciones heredadas a los inputs de la clase actual
+-No es buena idea usar en mismo input para el mouse y el mando para mover la camara porque cuantos mas fps haya mas rapido se mueve y viceversa, para evitarlo se usa una funcion en la cual se tiene que multiplicar el axis*rotationrate*DeltaSeconsFromWorld(). No se hace lo mismo con mismo con el movimiento porque no tiene en cuenta como cantidad de movimiento sino como rate(esto pasa en la 4.26 no se si en las siguientes pasa)
+-Una buena forma de hacer el blendspace es usar speed y angle(90->derecha, -90->izquierda, -180->atras etc) en vez de forward y right
+-Position vector y direction vector
+-Location=move possition around Direction=applied to rotation and scale
+-evitar footsliding obtener la y de los pies desde el inicio hasta que pisa de las diferentes animacions, y aplicar la formula= (y_finish-y_start)/(time_finish-time_start) -- GetActorTransform->InverseTransformDirection<-Velocity = Rotation from x vector
+-con la velocidades calcular los segmentos que tiene que dividir el blendspace dividiendo
+-Cuando es una propiedad de tipo puntero usar visibleAnywhere porque no se quiere modificar el puntero si no los datos que contiene(por ello son editables a diferencia de un tipo primitivo)
+-forward declaration
+-HideBoneByName->esconde un hueso(ideal para un sistema de desmebramientos?)
+-SetOwner es importante para multijugador y para inflingir daños(por ejemplo poner el setOwner a un arma que seria el personaje que lo empuña)
+-GetPlayerViewpoint -> Para obtener el punto de vista de la camara en coordenadas
+-MoveTo cuando lo hace una vez termina
+-#include "Engine/DamageEvents.h" para incluir 	FPointDamageEvent
+-Poner UPROPERTY en todoso los punteros para que sea gestionado por el unreal y su garbage collector 
+-BehaviorTree->abortLower_>Para todo lo que este a una prioridad menor de ese nodo/ Abort Self->Cuando cambia el valor del decorador aborta a si mismo
+
+
+-Para evitar archivos corruptos o hotreload errors cerrar el proyecto y compilar desde el IDE
+-Jerarquia de las clases: Object->Actor->Pawn->Character
+-Convenio dicta tener un prefijo para diferenciar los assets de tu proyecto
+-VisualStudi alt+G abre el fichero cabecera
+-GenerateBody() debe ir siempre lo primero
+-Poner componentes protegidos?
+
+-Si se quiere que la camara se mueva alrededor del personaje ir al springArm y poner a true el valor UsePawnControlRotation y desactivar el controller rotation pitch(porque rota el personaje)
+-CharacterMovement->OrientRotationToMovement
+-Para que el mouse se focusee automaticamente al juego desde el editor ir al submenu al lado de play->AdvanceSettings->GameGetsMouseControl
+-Para poner el nivel por defecto en el editor ir a editor settings LoadStartupLevel
+-Kismet -> blueprint math library (viejo nombre heredado de UE3)
+-Cuando se spawnea un objeto se comprueba si esta colisionando con algo primero para saber si tiene que desplazarse o no spawnear. Con AlwaysSpawn ignora todo eso
+-Al lado del boton de compilar en el submenu se puede elegir la opcion de guardar despues de compilar
+-BlueprintImplementtableEvent->para indicar que solo quieres una implementacion exclusiva en BP
+-BlueprintNativaEvent->Para implementar en c++ Y bLUEPRINT
+-Sweep hace que con una esfera hace un barrido desde el punto de inicio hasta el final y guarda todo lo que ha colisionado de por medio(si es sweepmulti o single)
+-FQuat::Identity -> No rota nada
+-FQuat nunca se queda bloqueado al rotar a diferencia del rotation
+-UseLasKeyFrame en las timeline para automaticamente la animacion
+-El instigator es el propietario o resposable de otro objeto
+-Siempre es bueno establecer el instigator
+-Poner el addDynamic en PostInitizalizeComponents() porque si se hace en el constructor puede que no se haga correctamente por si usas hotreloading
+-No usar hotreload porque puede pasar: No se compila a pesar de que pone compilado, que crashee y la peor es que compile pero corrompa el objeto
+-PostInitializaComponent()->Se ejecuta despues del constructor y antes del BeginPlay
+-Usar TEXT porque soporta una gran variedad de caracteres que seran convertidos al tipo necesario
+-GetNameSafe porque comprueba si es nulo o no
+-Cuando se usa formatos de cadenas usar * para convertirlo al tipo correcto
+-Cuando añades un punto de depuracion no hace falta reiniciar editor
+-Para compilar bien hay que cerrar el editor y compilar (f5)
+
+-Cuando se comroueba nulos usar ensure para que salte en el ide y te diga donde ha sucedido el valor nulo, util para cuando tengas que asignar un valor en el editor, se olvida y no sabes porque no esta funcionando. Cuando salta ensure solo lo hace una vez tras compilar, no crashea el motor y puedes continuar, sis se quiere que siempre salte usar ensureAlways. Otro parecido es check. En el shipping son eliminados por lo que no saltará
+-FString->Para debug nunca para mostrar para el jugador----FText->Para UI y se puede localizar----FName->Son strings que nunca cambian y estan hasheadas para una rapida comparacion, se usa para la logica del gameplay
+-Puedes crear tus propios eventos como beginOverlap o el hit con DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams, despues de declara el nombre y se llama el evento desde donde se quiere hacer el broadcast. Une ejemplo es SAttribruteComponent con UMG del proyecto de TomLooman . Ver sis e puede hacer pero igual que el sistema de daño que usa delegates y simplemente se llama al evento
+-Bindear directamente eventos a elementos de la UMG es relativamente costoso, mejor usar eventos(delegates)
+-GetClassDefaults->Retorna los valores por defecto de una clase
+-Si se cambia algo y se cambia el valor por defecto no deseado basta con ir al animator Restore Pre-Animated State
+
+-No hace falta crear un material dinamico para cambiar un parámetro, basta con obtener la malla que tiene el material y llamar a SetScalarParameterValueOnMesh
+-Se puede agregar a los sonidos del projectil el effecto doppler con el nodo del mismo nombre
+
+-Para abrir assets mas rapido usar ctrl+P
+
+-GetComponentClass itera sobre la lista de todos los componentes
+
+-ExposeOnSpawn permite mostrar la variable en forma de pin para cuando se spawnea/crea un objeto
+
+-Hardcodear assets es malo no solo porque se puede èrder las referencias si no porque tambien lo cargara en las subclases
+
+-Existe el UCLASS(ABSTRACT) para indicar que es una clase incompleta manteniendola de los dropdowns del editor
+
+-Utility AI -> buscar
+-editorPreferences->hot reload->autocompile c++ clases   desactivar para evitar que haga hotreload con las nuevas clases
+
+-IA MoveDirectlyTowards ignora el navmesh
+-En las variables de vectores en IA cuando es 0,0,0 se considera como no establecido, no un valor en si mismo. En IA solo (en los behaviorTrees con las blackboards en el nodo MoveTo)
+-Cuando se ponga en la blackboard una referencia a un objeto se puede especificar si quiere que sea una clase espefífica
+-Cuando se hace debug con el ' si miramos a uno hacemos debug de ese. Si quitamos la vision de debug y miramos a otro y pulsamos el ' se hara debug del otro
+-La IA no necesitan ir frame a frame. es mejor añadir un poco de intervalo de ejecucion
+-Buena practica para establecer valores a keys del blackboard u obtenerlas: BlackBoardComp->SetValueAsBool(AttackRangeKey.SelectedKeyName, bWithinRange); donde FBlackboardKeySelector AttackRangeKey;
+-LineOfSightTo usa el canal Visibility para hacer comprobaciones
+-No se puede poner loop y cooldown en el mismo nodo porque siempre se ejecutara cooldown haciendo que no ejecute el loop,  para solucionarlo mover el loop a un nodo hijo y ahi hacer la logica
+-El EQS sirve para spawnear cosas(enemigos, loot. detectar si algo esta dentro de un volumen particular(agua por ejecmplo) etc)
+-La API de EQS no es del todo completa para usar en c++. Es mas comodo blueprint
+-EQS puede filtrar y puntuar en sus tests
+-El query test trace, es util para saber lugares donde cubrirse
+-Pawn sensing en mas basico que el perception. El perception tiene un bookKeeping que permite mantener el rastro del objetivo durante unos momentos
+-Use controller desired rotation permite suavizar la rotacion de los personajes. Lo que pone hay de x,y,z significa que hace un x grados cada segundo
+-Existe algo mejor que ensure y es ensureMsgf que permite poner un mensaje para especificar porque ha saltado, ademas usa el OUTPU LOG. EnsureMsgf(BehaviorTree,TEXT("Se te ha olvidado asignar el Behavior tree en el AIController"))
+
+-Es bueno poner los nombres en visible para el editor porque asi los diseñadores pueden consultar el nombre de huesos/sockest sin necesidad de mirar codigo
+
+-Cuando pone que se le pase un UObject como parametro, significa que hay que pasarle un objeto el cual habita el mundo (por ejemplo si mismo). Lo necesita porque no sabe el contexto desde donde es llamado
+
+-Decorator service, diferencias
+
+-GetAllActorsOfClass obtiene todos los actores de una clase iterando en todo el nivel
+-Se puede usar el EQS para buscar puntos de spawn, hay un problema y es que pueden aparecer dentro de los cubos porque el navmesh esta dentro del objeto. Para solucionarlo de forma eficiente consiste en poner navmeshModifierVolumes para quitar esas zonas indeseadas, la forma rapida pero muy ineficiente es poner en el EQS PathExist.
+-Una modificacion que se puede hacer al EQS para que los puntos aparezcan pegados a la navmesh consiste en poner ProjectionData->TraceMode->Navigation. Cone sto los puntos de spawn están pegados al suelo
+
+-GameModeBase es la basica y estandar. Hay otra que es GameMode heredada  de UnrealTournament que tiene logica de puntuaciones, empezar partidas etc
+-GameModeBAse se encarga de llamar a beginPlay a todos los actores del mundo
+-El EQS se ejecuta en multiples frames(time sliced)
+
+-Las funciones de timers o eventos deben tener UFUNCTION
+
+-	int32 NroOfAliveBots = 0;
+	for (TActorIterator<ASAICharacter> It(GetWorld()); It; ++It) {
+		ASAICharacter* Bot = *It;
+		USAttributeCompontent* AttComp = Cast<USAttributeCompontent>(Bot->GetComponentByClass(USAttributeCompontent::StaticClass()));
+		if (AttComp && AttComp->IsAlive()) {
+			NroOfAliveBots += 1;
+		}
+	}
+version mejor de GetAllActorsFromClass porque solo retorna los objetos de esa clase?
+
+-Se puede usar curvesAssets para spawnear enemigos a lo largo de un periodo de tiempo. SI se usa eso aplicar ConstantInterpolation para que no sea lineal si no en escalera
+
+-TActorIterator
+
+-AIC->GetBrainComponent()->StopLogic("Killed"); para la logica de la ia aplicable a un mundo abierto por si los npcs estan muy lejos
+
+-Si es posible no poner todas las colisiones en physics and collisions o physics porque es muy costoso, lo mejor es query para el tema de collisiones, overlapr etc. El physics para gravedad, fuerzas...
+-Si se quiere expandir la libreria de funciones no hacerlo desde gameplayStatics si no  de blueprintLibrary
+
+-Es bueno poner UPROPERTY para que unreal lleve el registro de los punteros y asi limpie correctamente las referencias
+
+-Cuando se crea widgets en c++ el nombre del componente debe concordar con el nombre con el nombre del mismo componente que se agregará en el blueprint para que el puntero se llene
+-Siempre se configura el widget antes de ponerlo en pantalla (tema de transformaciones y attachments)
+-GetTimeSeconds obtiene el tiempo en el que te unes(para partidas online)
+
+-Game mode aparece en los servidoes
+-Poner el hud en el player controller porque cuando respawnea el character se ira creando uno sobre otroÇ
+
+-Si no se pone const en un parametro con referencia se considera retorno. con const se considera input
+-Nunca comprobar nulos en los BP porque solo se queja nada mas ya que nunca crashea porque esta virtualizado
+-GetWorldTimerManager() solo se puede usar si deriva de actor
+-GameplayTags
+-Exact match en false lo que hace es ignorar parte de la jerarquia hasta que sea lo suficiente bueno para que coincida 
+-En c++ solo se puede consultar tags FGameplayTag:: ...
+-Se puede hacer parrys con gameplay tags
+
+-En vez de usar tick se puede usar timers que se ejecuten cada x milisegundos pero habrá un poco de latencia
+
+-Marcar punteros como UPROPERTY para que no haya fragmentos de memoria
+
+-Replication-> processo de sincronizar datos u procesos llamados entre cliente y servidor
+-La informacion se envia cliente-servidor pero nunca de cliente a cliente
+-El servidor es el responsable de manejar el estado del juego (vida, spawneao de enemigos, IA). El cliente se encarga de actualizar los datos enviados por el servidor. Solo es de Servidor a cliente
+-Property updates -> Automatica envia variables actualizadas del servidor al cliente. RPCs->Ejecuta funciones en la otra maquina(por ejemplo cuandos e pulsa el boton de atacar se envia al servidor para ejecutar la logica de ataque)
+-RPC:Server-> llamado del cliente para pedir al servidor que ejecute una funcion.
+-RPC:Cliente->llamado por el servidor para ejecutar algo en el cliente
+-RPC:Multicast->El servidor envia una funcion a todos los clientes
+-Normalmente es una mezcla de donde se deberia ejecutar el codigo para evitar mucha latencia(por ejemplo ejecutar la animacion de lanzar el projectil y mientras el servidor comprueba donde spawnear el projectil)
+-Por convenio lo suyo es poner si es cliente o serviro delante de las funciones
+-Reliable se encarga de asegurar que lleguen los paquete enviandolos constantemente hasta que el servidor los reciba. Unreable lo envia y ya. Unreable es util para cuando se esta ejecutando una accion todo el rato (por ejemplo cuando se actualiza la posicion del jugador, de aqui a que compruebe si han llegado los paquetes ya le han llegado nuevos)
+-Tick funciona en cliente y servidor
+-DOREPLIFETIME envia mensaje a todos los clientes para que actualice el valor
+-ReplicatedUsing bindea una variable a una funcion particular
+-Tener cuidado con ReplicatedUsing porque puede dejarse de llamar en el servidor para ello hay que llamar a dicha funcion junto a la funcion que se envia al servidor para indicar que se ha realizado la accion (mirar SItemChes.cpp)
+
+-El playerController solo existe en el servidor y en el cliente el cual posee al personaje (no en otros)
+-GameMode solo existe en el servidor nunca en los clientes
+-PawnClass existe entre clientes y servidor
+-SetReplicates permite replicar actores (solo servidor envia informacion)
+-SetIsReplicatedByDefault es lo mismo que SetReplicates pero para el constructor ya que no activa cierto eventos
+
+-En BP cuando hay un icono de dos esferas juntas significa que esta replicado
+-Multicast para eventos transitiorios cosas que pasan en un momento pero no cambia nada(un explosion)(si alguien se une a la partida tarde no vera el cambio porque ya paso). ReplicatedUsing para cosas que cambian el estado
+-Unrealiable Solo cuando nos acercamos a un actor se sincroniza porque se corviente relevante. Si esta lejos no lo actualiza
+-IgnoreMulticasIgnoresRevelance
+-ExposeOnSpawn
+-Tener cuidado de no exponer mucho el framework para no dar mucho poder a los blueprints
+
+-HasAuthority comprueba si es servidor
+-Si se hace un multicast y acto seguido se destruye el actor no funcionara porque el servidor enviara la accion de destruir el actor que el multicast, para evitarlo poner el lifespan y hacer que cuando explote marcar como hidden in game
+-AIController solo existe en el servidor
+-Hay cosas como los linetrace que usa el jugador para saber hacia donde esta apuntando, algo que solo necesita el jugador no hace falta enviarlo al servidor
+
+-Se pueden crear funciones staticas en el NombreDelProjecto.h
+-ListenServen es un cliente y host a la vez
+-Los UObjects no se replican solos, hay que hacerlo. Sobreescribiendo IsSupportedForNetworking
+-No hace falta declarar GetLifetimeReplicatedProps porque cuando se pone algo como replicated lo integra en el .generated
+
+-ActorChannel es un hilo que envia cada vez que un actor es replicado para ese actor especifico
+-ReplicatedUsing solo se actualiza cuando el valor cambia si ya esta en ese y se "cambia" al mismo valor no se lanzará, puede ser util para no relanzar una accion dos veces pero tambien puede ser perjudicial.
+-Poner UFUNCTION siempre que se haga bindeos por nombre
+
+-En el caso de la replicaciond e acciones no se espera a que el servidor dicte si esta en running o no para evitar lo maximo la latencia
+-Para replicar necesita el UPROPERTY
+-NotReplicated meta data
+-Cuando replicas con estructura te aseguras que llegan al mismo tiempo a diferencia de con dos variables
+-Tener cuidado con los timers replicados porque se pueden ejecutar dos veces por parte del servidor y cliente
+-La forma de trabajar a la hora de hacer multijugador es primero replicar los datos y como(que funciones llamar en el servidor y cuales en el cliente), despues restringir la autoridad del cliente para evitar proyectiles duplicados u objetos o cosas raras etc
+-Cosas del gamestate no deben ejecutarse en el cliente
+
+-No usar en los widgets bindingfunctions para actualizar textos y otras cosas ya que se ejecutan cada tick, como alternativa usar eventos
+
+-En los sistemas de guardado siempre se carga una vez y se guarda la referencia al objeto todo gestionado en el GameMode
+-El gameMode tiene una funcion llamada InitGame
+-HandleStartingNewPlayer es util porque se puede sobreescribir para obtener el estado de un jugador cuando se une a la partida o para cargar un archivo de guardado, la ventaja es que es replicado para multijugador tambien
+-PureCast asume que siempre funcionara
+
+-Para guardar los actores del mundo:
+	-Itera los actores mas relevantes marcados por una interfaz, un tag, clase etc
+	-Guardar su nombre junto con su informacion para cuando se carque busque que actor poner su informacion
+	- guardar los datos en forma de estructura
+-Para cargar los actores del mundo:
+	-Carga el archivo
+	-Itera por los actores del mundo buscando el nombre con el que coincide (n X m donde n son los actores del mundo y m los actores guardados?)
+	-Actualizar los valores
+
+-Las variables guardadas tienen que ser marcadas como UPROPERTY
+-Cada propiedad de UPROPERTY marcada como SaveGame se guardará en FArchive y con Serialize podemos serializar para guardar cualquier tipo de variable
+-Si no se marca ninguna propiedad como SaveGame entonces todo el objeto será guardado
+-Cuando se serializa es importante en e el Archive llamar a ArIsSaveGame para que busque y guarde las variables marcadas con UPROPERTY(SaveGame)
+-Para actualizar el estado del actor cuando se carga es recomendable usar una interfaz que se encargue de ello y llame a los actores
+
+-Para multijugador cuando se carga un archivo es conveniente poner los actores con replicated movement para que actualize la posicion
+-IMPORTANTE: cuando se guarda el nombre del actor juntarlo con el nombre del nivel al que pertenece
+
+-UE5.0 finally exposed a function for us in AController::OnPossessedPawnChanged. That means when using 5.0+ you can instead rely on that function and don't need to make your own as we do in this lecture.
+
+-Cuando se abre un nivel nuevo se puede pasar una opcion que puedes especificar que GameMode tiene que ejecutar, si es servidor.. etc
+-Con ?listen cuando se abre un mapa hace que sea el host y jugador simultaneamente para que otras personas jueguen
+-Si pones una IP en open level intentará conectarse a direccion ip mas que a un nivel
+-_Entry cuando se nombra un nivel para indicar que es el primero en cargar (es convenio)
+
+-Es imortante diferenciar entre GetWorld()->TimeSeconds y GetServerWorldTimeSeconds el primero es cuando el jugador entra al mundo (en multijugador cuando se une a la partida) el segundo es el tiempo transcurrido desde el inicio del juego. Esto por ejemplo es util para los efectos de los materiales que estan animados, si no se emplea correctamente se puede desincronizar.
+-Alternativamente se puede replicar el timeseconds para que de el tiempo del servidor a los clientes
+
+-DrawAsBox -> divide la imagen en 3x3 y estira la parte central, se puede cambiar el margen para mejorar las imperfecciones (0.1 funciona bien)
+
+---
+https://www.youtube.com/watch?v=jrzq6Io_Y4E
+https://www.youtube.com/watch?v=_713CSOWkTU
+https://docs.unrealengine.com/5.1/en-US/gameplay-ability-system-for-unreal-engine/
+https://github.com/tranek/GASDocumentation
+https://docs.unrealengine.com/5.1/en-US/gameplay-tags-in-unreal-engine/
+https://docs.unrealengine.com/5.1/en-US/sample-game-projects-for-unreal-engine/
+https://docs.unrealengine.com/5.1/en-US/sample-game-projects-for-unreal-engine/
+https://docs.unrealengine.com/5.1/en-US/gameplay-tags-in-unreal-engine/
+https://www.unrealengine.com/es-ES/tech-blog/using-gameplay-tags-to-label-and-organize-your-content-in-ue4
+https://docs.unrealengine.com/5.1/en-US/rpcs-in-unreal-engine/
+https://docs.unrealengine.com/5.1/en-US/property-replication-in-unreal-engine/
+https://docs.unrealengine.com/5.1/en-US/networking-overview-for-unreal-engine/
+https://docs.unrealengine.com/5.1/en-US/networking-and-multiplayer-in-unreal-engine/
+https://forums.unrealengine.com/t/what-is-the-best-way-to-handle-saving-loading-an-array-of-objects/281775
+https://docs.unrealengine.com/5.1/en-US/widget-type-reference-for-umg-ui-designer-in-unreal-engine/
+https://docs.unrealengine.com/5.1/en-US/umg-styling-in-unreal-engine/
+https://docs.unrealengine.com/5.1/en-US/umg-best-practices-in-unreal-engine/
+https://docs.unrealengine.com/5.1/en-US/text-formatting-and-fonts-in-umg-for-unreal-engine/
+https://docs.unrealengine.com/5.0/en-US/umg-styling-in-unreal-engine/
+------------------
+TActorRange vs GetAllActorsFromClass?
+Es buena practica usar expresiones lambda en timers?

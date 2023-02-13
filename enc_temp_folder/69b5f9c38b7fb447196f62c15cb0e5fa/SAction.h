@@ -49,7 +49,6 @@ protected:
 	UPROPERTY(ReplicatedUsing="OnRep_RepData")
 		FActionWrapData RepData;
 	
-	UPROPERTY(Replicated)
 	float TimerStarted;
 
 	UFUNCTION()

@@ -24,6 +24,7 @@ void ASPlayerController::TogglePauseMenu() {
 }
 
 void ASPlayerController::SetupInputComponent(){
+	Super::SetupInputComponent();
 	InputComponent->BindAction("PauseMenu", IE_Pressed, this, &ASPlayerController::TogglePauseMenu);
 }
 
