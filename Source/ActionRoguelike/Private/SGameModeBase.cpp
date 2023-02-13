@@ -13,6 +13,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "SGameplayInterface.h"
 #include "Serialization/ObjectAndNameAsStringProxyArchive.h"
+#include "SMonsterData.h"
+#include "SActionComp.h"
+#include "Engine/AssetManager.h"
 
 static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.Spawnbots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
 
@@ -165,8 +168,52 @@ void ASGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryIn
 	TArray<FVector> Locations = QueryInstance->GetResultsAsLocations();
 
 	if (Locations.IsValidIndex(0)) {
-		GetWorld()->SpawnActor<AActor>(MinionClass, Locations[0], FRotator::ZeroRotator);
+
+		if (MonsterTable) {
+			TArray<FMonsterInfoRow*> Rows;
+			MonsterTable->GetAllRows("", Rows);
+
+			//Get random row
+			int32 RandomIndex = FMath::RandRange(0, Rows.Num() - 1);
+			FMonsterInfoRow* SelectedRow = Rows[RandomIndex];
+
+
+			//Carga el asset de forma asincrona
+			//Get asset manager
+			UAssetManager* Manager = UAssetManager::GetIfValid();
+			if (Manager) {
+				TArray<FName>Bundles;
+				//Create delegate which will trigger the OnMonsterLoaded once the asset its loaded
+				FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ASGameModeBase::OnMonsterLoaded, SelectedRow->MonsterId, Locations[0]);
+				Manager->LoadPrimaryAsset(SelectedRow->MonsterId, Bundles, Delegate);
+			}
+		}
+
+		
 	}
+}
+
+/*This function its what actually spawns*/
+void ASGameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnedLocation){
+
+	UAssetManager* Manager = UAssetManager::GetIfValid();
+	if (Manager) {
+		USMonsterData* MonsterData = Cast<USMonsterData>(Manager->GetPrimaryAssetObject(LoadedId));
+
+		if (MonsterData) {
+			AActor* NewBot = GetWorld()->SpawnActor<AActor>(MonsterData->MonsterClass, SpawnedLocation, FRotator::ZeroRotator);
+
+			if (NewBot) {
+				USActionComp* ActionComp = Cast<USActionComp>(NewBot->GetComponentByClass(USActionComp::StaticClass()));
+
+				for (TSubclassOf<USAction> ActionClass : MonsterData->Actions) {
+					ActionComp->AddAction(NewBot, ActionClass);
+				}
+			}
+		}
+	}
+
+	
 }
 
 void ASGameModeBase::RespawnPlayerElapsed(AController* Controller){

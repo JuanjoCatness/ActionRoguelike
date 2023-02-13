@@ -5,12 +5,41 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "EnvironmentQuery/EnvQueryTypes.h"
+#include "Engine/Datatable.h"
 #include "SGameModeBase.generated.h"
 
 class UEnvQuery;
 class UEnvQueryInstanceBlueprintWrapper;
 class UCurveFloat;
 class USSavesGame;
+class UDataTable;
+class USMonsterData;
+
+USTRUCT(BlueprintType)
+struct FMonsterInfoRow : public FTableRowBase {
+	GENERATED_BODY()
+
+public:
+
+	FMonsterInfoRow() {
+		Weight = 1.0f;
+		SpawnCost = 5.0f;
+		KillReward = 20.0f;
+	}
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		FPrimaryAssetId MonsterId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		float Weight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		float SpawnCost;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		float KillReward;
+};
+
 /**
  * 
  */
@@ -26,6 +55,9 @@ protected:
 		USSavesGame* CurrentSaveGame;
 
 	FTimerHandle TimerHandle_SpawnBots;
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+		UDataTable* MonsterTable;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 		float SpawnTimerInterval;
@@ -44,6 +76,8 @@ protected:
 
 	UFUNCTION()
 	void OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
+
+	void OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnedLocation);
 
 	UFUNCTION()
 		void RespawnPlayerElapsed(AController* Controller);
