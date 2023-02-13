@@ -34,6 +34,11 @@ void ASPickUp::Interact(APawn* InstigatorPawn){
 	//}
 }
 
+FText ASPickUp::GetInteractText_Implementation(APawn* InstigatorPawn)
+{
+	return FText::GetEmpty();
+}
+
 // Called when the game starts or when spawned
 void ASPickUp::BeginPlay()
 {

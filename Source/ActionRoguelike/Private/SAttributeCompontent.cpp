@@ -83,6 +83,11 @@ bool USAttributeCompontent::ApplyHealthChange(AActor* InstigatorActor, float Del
 	return ActualDelta != 0;
 }
 
+bool USAttributeCompontent::IsFullHealth()
+{
+	return Health == HealthMax;
+}
+
 float USAttributeCompontent::GetHealth()
 {
 	return Health;

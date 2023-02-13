@@ -31,6 +31,8 @@ protected:
 		float TimeToReactivate;
 
 	virtual void Interact(APawn* InstigatorPawn);
+	FText GetInteractText_Implementation(APawn* InstigatorPawn);
+
 	void Enable();
 	void Disable();
 

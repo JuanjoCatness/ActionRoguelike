@@ -6,6 +6,7 @@
 #include "SPickUp.h"
 #include "SHealthPotion.generated.h"
 
+
 /**
  * 
  */
@@ -20,9 +21,11 @@ public:
 protected:
 	virtual void Interact(APawn* InstigatorPawn) override;
 
+	FText GetInteractText_Implementation(APawn* InstigatorPawn) override;
 
 	UPROPERTY(EditDefaultsOnly)
 		float HealQuantity;
 
-
+	UPROPERTY(EditDefaultsOnly)
+		float CreditCost;
 };
