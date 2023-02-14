@@ -6,7 +6,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Engine/ActorChannel.h"
 
-DECLARE_CYCLE_STAT(TEXT("StartActionByName"), STAT_StartActionByName, STATGROUP_STANFORD);
+//DECLARE_CYCLE_STAT(TEXT("StartActionByName"), STAT_StartActionByName, STATGROUP_STANFORD);
 
 // Sets default values for this component's properties
 USActionComp::USActionComp()
@@ -108,7 +108,7 @@ void USActionComp::RemoveAction(USAction* ActionToRemove){
 
 bool USActionComp::StartActionByName_Implementation(AActor* NewInstigator, FName ActionName){
 
-	SCOPE_CYCLE_COUNTER(STAT_StartActionByName);
+	//SCOPE_CYCLE_COUNTER(STAT_StartActionByName);
 
 	for (USAction* Action : Actions) {
 		if (Action && Action->ActionName == ActionName) {

@@ -56,6 +56,16 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer){
 
 void ASGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage){
 	Super::InitGame(MapName, Options, ErrorMessage);
+
+	FString SelectedSaveSlot = UGameplayStatics::ParseOption(Options, "SaveGame");
+
+	if (SelectedSaveSlot.Len() > 0) {
+		SlotName = SelectedSaveSlot;
+	}
+	else {
+		SlotName = "DefaultSlotSaveGame";
+	}
+
 	LoadSaveGame();
 }
 
