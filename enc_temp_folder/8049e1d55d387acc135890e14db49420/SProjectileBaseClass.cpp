@@ -18,8 +18,7 @@ ASProjectileBaseClass::ASProjectileBaseClass()
 
 	ShpereComp = CreateDefaultSubobject<USphereComponent>("ShereComp");
 	ShpereComp->SetCollisionProfileName("Projectile");
-	ShpereComp->OnComponentHit.AddDynamic(this, &ASProjectileBaseClass::OnActorHit);
-	//ShpereComp->IgnoreActorWhenMoving(GetInstigator(),true);
+	ShpereComp->IgnoreActorWhenMoving(GetInstigator(),true);
 	RootComponent = ShpereComp;
 
 	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
@@ -27,7 +26,6 @@ ASProjectileBaseClass::ASProjectileBaseClass()
 
 	MovementComp = CreateDefaultSubobject<UProjectileMovementComponent>("MovementComp");
 	MovementComp->InitialSpeed = 1000.0f;
-	MovementComp->ProjectileGravityScale = 0.0f;
 	MovementComp->bRotationFollowsVelocity = true;
 	MovementComp->bInitialVelocityInLocalSpace = true;
 
@@ -65,7 +63,7 @@ void ASProjectileBaseClass::Explode_Implementation(){
 
 void ASProjectileBaseClass::PostInitializeComponents() {
 	Super::PostInitializeComponents();
-
+	ShpereComp->OnComponentHit.AddDynamic(this, &ASProjectileBaseClass::OnActorHit);
 }
 
 // Called every frame

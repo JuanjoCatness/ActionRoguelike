@@ -6,7 +6,6 @@
 #include "Net/UnrealNetwork.h"
 #include "Engine/ActorChannel.h"
 
-DECLARE_CYCLE_STAT(TEXT("StartActionByName"), STAT_StartActionByName, STATGROUP_STANFORD);
 
 // Sets default values for this component's properties
 USActionComp::USActionComp()
@@ -37,18 +36,6 @@ void USActionComp::BeginPlay()
 			AddAction(GetOwner(), ActionClass);
 		}
 	}
-}
-
-void USActionComp::EndPlay(const EEndPlayReason::Type EndPlayReason){
-	TArray<USAction*> ActionsCopy = Actions;
-	//Stops the action when its removed to avoid null pointers
-	for (USAction* Action : ActionsCopy) {
-		if (Action && Action->IsRunning()) {
-			Action->StopAction(GetOwner());
-		}
-	}
-
-	Super::EndPlay(EndPlayReason);
 }
 
 
@@ -107,9 +94,6 @@ void USActionComp::RemoveAction(USAction* ActionToRemove){
 }
 
 bool USActionComp::StartActionByName_Implementation(AActor* NewInstigator, FName ActionName){
-
-	SCOPE_CYCLE_COUNTER(STAT_StartActionByName);
-
 	for (USAction* Action : Actions) {
 		if (Action && Action->ActionName == ActionName) {
 			if (!Action->CanStart(NewInstigator)) {
@@ -120,9 +104,6 @@ bool USActionComp::StartActionByName_Implementation(AActor* NewInstigator, FName
 			if (!GetOwner()->HasAuthority()) {
 				ServerStartAction(NewInstigator, ActionName);
 			}
-
-			//Bookmark for Unreal Insights
-			TRACE_BOOKMARK(TEXT("StartAction: %s"), *GetNameSafe(Action));
 
 			Action->StartAction(NewInstigator);
 			return true;
