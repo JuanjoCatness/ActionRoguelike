@@ -10,6 +10,7 @@ static TAutoConsoleVariable<bool> CVarDamageMultiplier(TEXT("su.DamageMultiplier
 
 bool USAttributeCompontent::IsAlive() const{
 	return Health > 0.0f;
+
 }
 
 // Sets default values for this component's properties
@@ -22,6 +23,9 @@ USAttributeCompontent::USAttributeCompontent()
 	// ...
 	HealthMax = 100.0f;
 	Health = HealthMax;
+
+	Rage = 0;
+	RageMax = 100;
 
 	SetIsReplicatedByDefault(true);
 }
@@ -39,6 +43,8 @@ bool USAttributeCompontent::IsActorAlive(AActor* Actor)
 {
 	USAttributeCompontent* AttComp = GetAttribute(Actor);
 	if (AttComp) {
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("dada"));
 		return AttComp->IsAlive();
 	}
 	return false;
@@ -100,6 +106,27 @@ float USAttributeCompontent::GetMaxHealth()
 
 void USAttributeCompontent::MulticastHealthChange_Implementation(AActor* InstigatorActor, float NewHealth, float Delta){
 	OnHealthChange.Broadcast(InstigatorActor,this, NewHealth, Delta);
+}
+
+float USAttributeCompontent::GetRage() const
+{
+	return Rage;
+}
+
+
+bool USAttributeCompontent::ApplyRage(AActor* InstigatorActor, float Delta)
+{
+	float OldRage = Rage;
+
+	Rage = FMath::Clamp(Rage + Delta, 0.0f, RageMax);
+
+	float ActualDelta = Rage - OldRage;
+	if (ActualDelta != 0.0f)
+	{
+		OnRageChanged.Broadcast(InstigatorActor, this, Rage, ActualDelta);
+	}
+
+	return ActualDelta != 0;
 }
 
 void USAttributeCompontent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)const {

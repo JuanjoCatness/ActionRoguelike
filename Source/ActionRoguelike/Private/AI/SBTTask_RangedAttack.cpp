@@ -21,10 +21,14 @@ EBTNodeResult::Type USBTTask_RangedAttack::ExecuteTask(UBehaviorTreeComponent& O
 
 		AActor* TargetActor = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor"));
 		if (TargetActor == nullptr) {
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("TargetActor"));
 			return EBTNodeResult::Failed;
 		}
 		
-		if (USAttributeCompontent::IsActorAlive(TargetActor)) {
+		if (!USAttributeCompontent::IsActorAlive(TargetActor)) {
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("IsActorAlive"));
 			return EBTNodeResult::Failed;
 		}
 

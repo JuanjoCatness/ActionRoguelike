@@ -23,8 +23,11 @@ ASMagicProjectile::ASMagicProjectile()
 
 void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor != GetInstigator()) {
 
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("ye"));
+	if (OtherActor && OtherActor != GetInstigator()) {
+		
 		USActionComp* ActionComp = Cast<USActionComp>(OtherActor->GetComponentByClass(USActionComp::StaticClass()));
 		if (ActionComp && ActionComp->ActiveGameplayTags.HasTag(ParryTag)) {
 			MovementComp->Velocity = -MovementComp->Velocity;

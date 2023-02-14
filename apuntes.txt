@@ -233,7 +233,94 @@ version mejor de GetAllActorsFromClass porque solo retorna los objetos de esa cl
 -Alternativamente se puede replicar el timeseconds para que de el tiempo del servidor a los clientes
 
 -DrawAsBox -> divide la imagen en 3x3 y estira la parte central, se puede cambiar el margen para mejorar las imperfecciones (0.1 funciona bien)
+-Progress bar es mejor que usar una imagen para mostrar la vida ya que la imagen se puede estirar si se cambia el margen
 
+-AutomaticRuleBasedOnSuqenecePlayerInState cuando casi acaba la animacion pasa al siguiente estado
+
+-Usar cached pose para un animgraph mas reutilizable y limpio
+-Para que el blendspace haga transiciones mas suaves usar weightspeed
+
+-NSLOCTEXT permite obtener el texto del codigo para que sea localizable
+
+-El Selector de los bp es mejor no poner cosas que sean costosas de computar
+
+-Los datatables se leen solo durante el gameplay
+
+-Los DataAssets son solo assets, divide el codigo de los datos, permite variaciones de la clase simplemente modificando los datos,
+
+-Las referencias son hard por defecto, carga de forma sincrona con otros objetos(si el jugador tiene referencia a un actor tiene que cargar ese actor ademas, no hace falta ni usarlo o tener un valor asignado, simplemente con ponerlo), se pueden salir de las mano. Ejemplo TSubClassOf, punteros (Texture2D*), Casteo a otras clases
+-Las referencias soft, se cargan de forma asincrona en segundo plano y evita que haya congelamientos de pantalla, requiere mas trabajo, reduce la carga y el uso de memoria cargando y descargando los datos a demanda. Se usa cuando no es necesario de forma inmediata ya que puede tardar en cargar
+-Hay que tener cuidado de no usar todo el rato punteros suaves (TSoftObjectPtr<>) porque luego hay que indicar que tiene que cargarlo y puede llegar a ser complicado. Hay que usarlo en puntos estratégicos
+
+-SizeMap: ayuda a ver las hard references para ver el total de tamaño cargado
+-ReferenceViewer: enseña los casteos innecesarios(quien nos referencia y a quienes referenciamos)
+
+-Si carga el asset de forma asincrona se mostrará un icono por defecto(para c++ se usa FStreamableManager)
+-TSoftClassPtr<T> -> soft reference of TSubClassOf<T>
+-TSoftObjectPtr<T> -> Soft reference of content such as UTexture2D*
+
+-Asset manager carga PrimaryDataAsset de forma asincrona provisto por FPrimaryAssetId de un asset
+-Carga el DataAsset que contiene la informacion y lo carga de una
+-Para cargar cosas con el asset manager (como por ejemplo data assets de una dataTable que no puede ser una referencia suave ya que se utiliza al momento), se configura en el project settings->AssetManager y se añade una nueva id en la cual se especifica el nombre, el tipo de asset a cargar y el directorio
+
+-Se puede cargar por lotes y especificar que partes de un actor se quiere cargar (por ejemplo de un boton solo se quiere que se cargue 
+
+-TSoftObjectPtr<T> vs AssetManager?
+
+-Hay que hacer una build a menudo porque revela bugs que antes no habia
+
+-En package settings:
+	·List of maps to include in package build -> los mapas a incluir en la build
+
+-Si al hacer una build salta error de que tiene el asset mannager claves duplicadas basta con ir al DefaultGame.ini y poner antes de todo !PrimaryAssetTypesToScan=ClearArray esto limpia el array del asset manager para reconfigurarlo ya que antes consulta el BaseGame.ini y si tiene las mismas claves del assetmanager las cogerá y añadira a las que tiene en el DefaultGame.ini. Si sigue dando el mismo error quitar la linea y volverla a ponerla para que detecte el cambio
+
+-Cuando se hace una build si se usa el asset manager puede dar problemas(como que no se carga los assets). Para arreglarlo basta con ir al asset manager e ir a cook rule y ponerlo como always cook
+
+-No optimizar tarde pero no demasiado temprano(porque puede reducir mucho la flexibilidad del codigo , perder el tiempo en cosas que pueden cambiar con el tiempo, cosas que no se hagan en la build final)
+-Para optimizar:
+	-Avoid tick (la mayoria de logica puede ser hecha atraves de eventos o timers con poca frecuencia mas que cada frame)
+	-bGenerateOverlapEvents = false unless required
+	-Collision profiles to only react to necessary chaannels or disable collision entirely on small/unreachable objcet
+	-Collision enabled settings set to Query Only unless physics simulation is required
+	-Avoid hard reference to other content(Casting for example)(blueprint included) where possible(apply these principles using bases classes, interfaces, FNames and GameplayTags)(affects load times and can affect blueprint compile times)
+
+-C++ vs Blueprints:
+	-Blueprints is not just for prototyping
+	-Slow functions can be moved into C++ manually(large loops, math-heavy operations. Often easier to maintain in c++)
+	-Blueprint nativization(increase packege size and may be error prone. usually better manually make c++ for heavy operations)
+
+-Stat slate //UMG
+-Stat uobject
+-Cuando se hace profiling usar standalone
+
+-Para definir un nuevo comando stat se usa DECLARE_CYCLE_STAT(TEXT("StartActionByName"), STAT_StartActionByName, STATGROUP_STANFORD);
+-Para utilizarlo SCOPE_CYCLE_COUNTER(STAT_StartActionByName); dentro del dominio (deliminado por { }) y el codigo a hacer profiling por debajo(si se quiere ver especificamente el rendimiento de una funcion poner el scope y la funcion juntas en el { })
+
+-Unreal Insights es el camino a seguir, para ejecutarlo:
+	-Se hace una build
+	-Se lanza UnrealInsights.exe
+	-Ejecuta el ejecutable de juego
+-Para decirle a unreal insights cuando algo ha pasado usar TRACE_BOOKMARK(TEXT("StartAction: %s"), *GetNameSafe(Action)); aparecerá en el Insights para en el momento en el que es llamado(si habia mas codigo por encima el bookmark indicará que hubo mas codigo ejecutado antes pero el bookmark te envia al instante de la llamada)
+-En el apartado AssetsloadingInsights se puede ver como carga de forma asincrona los assets del assetmanager y las referencias suaves
+
+-BlueprintBreakOnExceptions -> Cuando sucede algo fatal se para la ejecucción
+
+-EndPlay()
+
+-TraceChannel para cosas a las que trazar, que no pueden ser (por ejemplo nadie puede ser la visibilidad, se puede bloquear la visibilidad pero no ser)
+
+-Se puede pasar opciones cuandos se carga un nivel, para ello en el campo options se separan las opciones con ?. Por ejemplo para cargar un savegame basta con pasarle ?SaveGame=nombre. SaveGame es el nombre arbitrario dado el cual se leera en el initgame
+
+-El collapse no llama al Tick
+
+-Se puede cargar un nivel de forma asincrona (level streaming) para que pueda cargar los assets en segundo plano
+
+-Utility scripting
+
+-UGameInstanceSubsystems 
+-UDevelopingSettings
+
+-Siempre hacer que en el editor no se puedan meter valores que sean ilegales (por ejemplo que en un parametro de daño no se meta valores negativos porque eso puede afectar negativamente a la ejecucion del codigo(como paso con el proyectil de magia que tenia daño negativo y no aplicaba daño por eso y parecia que estaba roto))
 ---
 https://www.youtube.com/watch?v=jrzq6Io_Y4E
 https://www.youtube.com/watch?v=_713CSOWkTU
@@ -254,6 +341,27 @@ https://docs.unrealengine.com/5.1/en-US/umg-styling-in-unreal-engine/
 https://docs.unrealengine.com/5.1/en-US/umg-best-practices-in-unreal-engine/
 https://docs.unrealengine.com/5.1/en-US/text-formatting-and-fonts-in-umg-for-unreal-engine/
 https://docs.unrealengine.com/5.0/en-US/umg-styling-in-unreal-engine/
+https://www.youtube.com/watch?v=j6mskTgL7kU&t=2363s
+https://docs.unrealengine.com/5.1/en-US/data-driven-gameplay-elements-in-unreal-engine/
+https://docs.unrealengine.com/5.0/en-US/API/Runtime/Engine/Engine/UAssetManager/
+https://www.tomlooman.com/unreal-engine-asset-manager-async-loading/
+https://benui.ca/unreal/data-driven-design/
+https://docs.unrealengine.com/5.1/en-US/packaging-unreal-engine-projects/
+https://www.tomlooman.com/unreal-engine-profiling-stat-commands/
+https://docs.unrealengine.com/5.1/en-US/packaging-unreal-engine-projects/
+https://docs.unrealengine.com/5.1/en-US/stat-commands-in-unreal-engine/
+https://www.youtube.com/watch?v=2edoacF53F0
+https://www.youtube.com/watch?v=j6mskTgL7kU
+https://www.youtube.com/watch?v=hcxetY8g_fs
+https://www.youtube.com/watch?v=Rf6oNkcGmX4
+https://docs.unrealengine.com/5.1/en-US/unreal-insights-in-unreal-engine/
+
+Mas para aprender:
+https://dev.epicgames.com/community/learning?application=unreal_engine
+https://www.tomlooman.com/unreal-engine-resources/
+https://github.com/tomlooman/EpicSurvivalGame
+https://github.com/tomlooman/ActionRoguelike
+https://docs.unrealengine.com/5.1/en-US/sample-game-projects-for-unreal-engine/
 ------------------
 TActorRange vs GetAllActorsFromClass?
 Es buena practica usar expresiones lambda en timers?
